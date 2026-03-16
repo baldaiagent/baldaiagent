@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>$BALD — A bald AI agent can win the whole thing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f0ede6;
+      --dark: #0a0a0a;
+      --gold: #c9a227;
+      --gold2: #e8d48a;
+      --white: #faf9f5;
+      --muted: rgba(10,10,10,0.4);
+      --border: rgba(10,10,10,0.1);
+      --border2: rgba(10,10,10,0.22);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Barlow Condensed', sans-serif; background: var(--bg); color: var(--dark); overflow-x: hidden; cursor: none; }
+    .cursor { width: 8px; height: 8px; background: var(--dark); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); }
+    .cursor-ring { width: 26px; height: 26px; border: 1px solid rgba(10,10,10,0.25); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: all 0.1s ease; }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(240,237,230,0.97); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: space-between; padding: 0 36px; height: 56px; border-bottom: 1px solid var(--border); }
+    .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.2em; color: var(--dark); text-decoration: none; }
+    .nav-logo span { color: var(--gold); }
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+    .nav-icon { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: none; color: var(--dark); text-decoration: none; transition: all 0.2s; }
+    .nav-icon:hover { background: var(--dark); color: var(--bg); }
+    .nav-icon svg { width: 13px; height: 13px; }
+    .nav-ca { font-family: 'Courier Prime', monospace; font-size: 10px; letter-spacing: 0.08em; color: var(--muted); border: 1px solid var(--border); padding: 5px 12px; cursor: pointer; transition: all 0.2s; }
+    .nav-ca:hover { border-color: var(--dark); color: var(--dark); }
+
+    /* HERO */
+    .hero { min-height: 100vh; padding-top: 56px; background: var(--dark); display: flex; flex-direction: column; position: relative; overflow: hidden; }
+    .hero-glow { position: absolute; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(ellipse 70% 60% at 50% 40%, rgba(232,212,138,0.1) 0%, transparent 65%); }
+    .bald-bg { position: absolute; z-index: 1; top: 50%; left: 50%; transform: translate(-50%,-54%); width: clamp(260px,38vw,500px); opacity: 0.08; pointer-events: none; animation: float 6s ease-in-out infinite; }
+    @keyframes float { 0%,100% { transform: translate(-50%,-54%); } 50% { transform: translate(-50%,-57%); } }
+    .hero-content { position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 60px 40px 40px; }
+    .hero-eyebrow { font-family: 'Courier Prime', monospace; font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(232,212,138,0.5); margin-bottom: 20px; animation: fup 1s ease forwards; opacity: 0; }
+    .hero-tweet { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-left: 3px solid var(--gold); padding: 20px 24px; margin-bottom: 28px; max-width: 560px; animation: fup 1s 0.05s ease forwards; opacity: 0; }
+    .tweet-author { font-family: 'Courier Prime', monospace; font-size: 11px; letter-spacing: 0.1em; color: rgba(232,212,138,0.6); margin-bottom: 8px; }
+    .tweet-quote { font-family: 'DM Serif Display', serif; font-style: italic; font-size: clamp(18px, 2.5vw, 26px); color: rgba(255,255,255,0.9); line-height: 1.35; }
+    .tweet-src { margin-top: 10px; font-family: 'Courier Prime', monospace; font-size: 10px; letter-spacing: 0.1em; color: rgba(255,255,255,0.2); }
+    .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(80px,16vw,200px); color: var(--white); line-height: 0.82; letter-spacing: 0.06em; animation: fup 1s 0.1s ease forwards; opacity: 0; }
+    .hero-title span { color: var(--gold2); text-shadow: 0 0 60px rgba(232,212,138,0.25); }
+    .hero-sub { font-family: 'Bebas Neue', sans-serif; font-size: clamp(14px,2vw,22px); letter-spacing: 0.3em; color: rgba(255,255,255,0.25); margin-top: 8px; animation: fup 1s 0.15s ease forwards; opacity: 0; }
+    .hero-desc { font-size: clamp(15px,1.6vw,17px); color: rgba(255,255,255,0.4); max-width: 520px; line-height: 1.8; margin-top: 20px; font-weight: 300; animation: fup 1s 0.2s ease forwards; opacity: 0; }
+    .hero-desc strong { color: rgba(255,255,255,0.85); }
+    .hero-stats { display: flex; gap: 0; margin-top: 24px; border: 1px solid rgba(232,212,138,0.15); width: fit-content; animation: fup 1s 0.25s ease forwards; opacity: 0; }
+    .h-stat { padding: 12px 20px; text-align: center; border-right: 1px solid rgba(232,212,138,0.1); }
+    .h-stat:last-child { border-right: none; }
+    .h-stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.08em; color: var(--gold2); display: block; }
+    .h-stat-label { font-family: 'Courier Prime', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.2); display: block; margin-top: 2px; }
+    .hero-cta { display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap; animation: fup 1s 0.3s ease forwards; opacity: 0; }
+    .cta-outline { background: transparent; color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.15); padding: 13px 28px; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.18em; cursor: none; transition: all 0.2s; text-decoration: none; display: flex; align-items: center; }
+    .cta-outline:hover { border-color: var(--gold); color: var(--gold); }
+    @keyframes fup { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+    /* TICKER */
+    .ticker-wrap { border-top: 1px solid rgba(232,212,138,0.15); overflow: hidden; height: 36px; display: flex; align-items: center; flex-shrink: 0; position: relative; z-index: 2; }
+    .ticker-inner { display: flex; white-space: nowrap; animation: tick 22s linear infinite; }
+    @keyframes tick { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+    .tick-item { font-family: 'Courier Prime', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(232,212,138,0.35); padding: 0 20px; }
+    .tick-item.hi { color: rgba(232,212,138,0.8); }
+
+    /* ORIGIN */
+    .section-origin { padding: 100px 40px; background: var(--bg); border-top: 1px solid var(--border); }
+    .origin-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+    @media (max-width: 800px) { .origin-inner { grid-template-columns: 1fr; gap: 48px; } }
+    .eyebrow { font-family: 'Courier Prime', monospace; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
+    .origin-left h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(44px,6vw,80px); letter-spacing: 0.04em; line-height: 0.88; color: var(--dark); margin-bottom: 28px; }
+    .origin-left h2 span { color: var(--gold); }
+    .origin-left p { font-size: clamp(15px,1.6vw,17px); line-height: 1.85; color: var(--muted); margin-bottom: 18px; font-weight: 300; }
+    .origin-left p strong { color: var(--dark); font-weight: 600; }
+    .why-points { margin-top: 32px; display: flex; flex-direction: column; gap: 0; }
+    .why-point { display: flex; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+    .why-point:first-child { border-top: 1px solid var(--border); }
+    .wp-num { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: rgba(10,10,10,0.08); line-height: 1; flex-shrink: 0; width: 44px; }
+    .wp-title { font-family: 'Bebas Neue', sans-serif; font-size: 17px; letter-spacing: 0.08em; color: var(--dark); margin-bottom: 4px; }
+    .wp-desc { font-size: 13px; color: var(--muted); line-height: 1.65; font-weight: 300; }
+    .tweet-card-big { background: var(--dark); padding: 36px; border: 1px solid rgba(255,255,255,0.06); position: relative; }
+    .tcb-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .tcb-av { width: 44px; height: 44px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .tcb-name { font-family: 'Bebas Neue', sans-serif; font-size: 17px; letter-spacing: 0.1em; color: var(--white); }
+    .tcb-handle { font-family: 'Courier Prime', monospace; font-size: 11px; color: rgba(255,255,255,0.3); }
+    .tcb-text { font-family: 'DM Serif Display', serif; font-style: italic; font-size: clamp(22px,3vw,32px); color: var(--white); line-height: 1.3; margin-bottom: 20px; }
+    .tcb-text span { color: var(--gold2); }
+    .tcb-meta { font-family: 'Courier Prime', monospace; font-size: 10px; letter-spacing: 0.12em; color: rgba(255,255,255,0.2); border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px; }
+    .tcb-label { position: absolute; top: -10px; right: 20px; background: var(--gold); color: #000; font-family: 'Bebas Neue', sans-serif; font-size: 11px; letter-spacing: 0.15em; padding: 3px 12px; }
+
+    /* WINS */
+    .section-wins { padding: 100px 40px; background: var(--dark); border-top: 1px solid rgba(255,255,255,0.05); }
+    .wins-inner { max-width: 1100px; margin: 0 auto; }
+    .wins-label { font-family: 'Courier Prime', monospace; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(232,212,138,0.5); margin-bottom: 40px; }
+    .wins-headline { font-family: 'Bebas Neue', sans-serif; font-size: clamp(52px,9vw,130px); color: var(--white); line-height: 0.85; letter-spacing: 0.05em; margin-bottom: 64px; }
+    .wins-headline span { color: var(--gold2); }
+    .wins-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.06); }
+    @media (max-width: 700px) { .wins-grid { grid-template-columns: 1fr; } }
+    .win-card { background: var(--dark); padding: 36px 30px; transition: all 0.25s; cursor: none; }
+    .win-card:hover { background: rgba(232,212,138,0.05); }
+    .win-icon { font-size: 28px; margin-bottom: 16px; display: block; }
+    .win-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.08em; color: var(--gold2); margin-bottom: 12px; }
+    .win-body { font-size: 14px; color: rgba(255,255,255,0.4); line-height: 1.75; font-weight: 300; }
+    .win-body strong { color: rgba(255,255,255,0.8); }
+
+    /* CHAT */
+    .section-chat { padding: 100px 40px; background: var(--bg); border-top: 1px solid var(--border); }
+    .chat-heading { text-align: center; margin-bottom: 48px; }
+    .chat-heading h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(36px,5vw,72px); letter-spacing: 0.05em; color: var(--dark); }
+    .chat-heading h2 span { color: var(--gold); }
+    .chat-heading p { font-family: 'Courier Prime', monospace; font-size: 12px; color: var(--muted); letter-spacing: 0.1em; margin-top: 10px; }
+    .chat-shell { max-width: 820px; margin: 0 auto; border: 1px solid var(--border2); background: var(--white); overflow: hidden; }
+    .chat-hdr { background: var(--dark); border-bottom: 1px solid rgba(232,212,138,0.15); padding: 14px 20px; display: flex; align-items: center; gap: 14px; }
+    .chat-hdr-av { width: 42px; height: 42px; flex-shrink: 0; background: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 22px; }
+    .chat-hdr-name { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.15em; color: var(--white); }
+    .chat-hdr-status { font-family: 'Courier Prime', monospace; font-size: 10px; color: rgba(255,255,255,0.3); letter-spacing: 0.1em; margin-top: 2px; }
+    .chat-hdr-badge { margin-left: auto; font-family: 'Courier Prime', monospace; font-size: 9px; letter-spacing: 0.15em; color: rgba(232,212,138,0.5); border: 1px solid rgba(232,212,138,0.2); padding: 3px 10px; }
+    #chat-messages { height: 400px; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 14px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+    .msg { display: flex; gap: 10px; max-width: 86%; animation: msgin 0.2s ease; }
+    @keyframes msgin { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+    .msg.user { margin-left: auto; flex-direction: row-reverse; }
+    .msg .av { width: 34px; height: 34px; flex-shrink: 0; background: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 16px; align-self: flex-end; }
+    .msg.user .av { background: var(--dark); font-family: 'Bebas Neue', sans-serif; font-size: 10px; color: var(--gold2); letter-spacing: 0.05em; }
+    .msg .bub { padding: 12px 16px; font-size: 14px; line-height: 1.65; letter-spacing: 0.02em; }
+    .msg.ai .bub { background: var(--bg); border: 1px solid var(--border); color: var(--dark); border-radius: 2px 10px 10px 10px; }
+    .msg.user .bub { background: var(--dark); color: var(--gold2); font-weight: 600; border-radius: 10px 2px 10px 10px; }
+    .typing-wrap { display: flex; gap: 5px; padding: 12px 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 2px 10px 10px 10px; width: fit-content; }
+    .typing-wrap span { width: 6px; height: 6px; background: var(--border2); border-radius: 50%; animation: tdot 1.2s infinite; }
+    .typing-wrap span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-wrap span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes tdot { 0%,60%,100% { background: var(--border); } 30% { background: var(--gold); } }
+    .chat-sugs { padding: 8px 20px 12px; display: flex; gap: 6px; flex-wrap: wrap; border-top: 1px solid var(--border); background: var(--bg); }
+    .sug { background: transparent; border: 1px solid var(--border); color: var(--muted); font-family: 'Courier Prime', monospace; font-size: 11px; padding: 5px 12px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.05em; }
+    .sug:hover { border-color: var(--gold); color: var(--gold); }
+    .chat-row { display: flex; border-top: 1px solid var(--border2); }
+    #cinput { flex: 1; background: var(--dark); border: none; outline: none; color: var(--white); font-family: 'Barlow Condensed', sans-serif; font-size: 15px; padding: 14px 16px; caret-color: var(--gold); }
+    #cinput::placeholder { color: rgba(255,255,255,0.2); }
+    #csend { background: var(--gold); color: #000; border: none; padding: 14px 22px; cursor: pointer; transition: all 0.15s; font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 0.12em; }
+    #csend:hover { background: var(--gold2); }
+    #csend:disabled { background: var(--border); cursor: default; color: transparent; }
+
+    /* STATS */
+    .section-stats { border-top: 1px solid var(--border); }
+    .stats-strip { display: grid; grid-template-columns: repeat(4,1fr); }
+    @media (max-width: 640px) { .stats-strip { grid-template-columns: repeat(2,1fr); } }
+    .s-card { background: var(--bg); padding: 52px 32px; text-align: left; border-right: 1px solid var(--border); }
+    .s-card:last-child { border-right: none; }
+    .s-val { font-family: 'Bebas Neue', sans-serif; font-size: clamp(36px,5vw,60px); color: var(--dark); line-height: 1; margin-bottom: 8px; letter-spacing: 0.04em; }
+    .s-val.gold { color: var(--gold); }
+    .s-label { font-family: 'Courier Prime', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+
+    /* HOW TO BUY */
+    .section-buy { padding: 100px 40px; background: var(--bg); border-top: 1px solid var(--border); text-align: center; }
+    .section-buy h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(36px,5vw,72px); letter-spacing: 0.05em; color: var(--dark); margin-bottom: 8px; }
+    .section-buy h2 span { color: var(--gold); }
+    .section-buy .sub { font-size: 15px; color: var(--muted); margin-bottom: 56px; font-style: italic; }
+    .steps-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); max-width: 1100px; margin: 0 auto; text-align: left; }
+    @media (max-width: 700px) { .steps-grid { grid-template-columns: 1fr 1fr; } }
+    .step { background: var(--white); padding: 36px 28px; transition: all 0.2s; cursor: none; }
+    .step:hover { background: var(--dark); }
+    .step:hover .step-num, .step:hover .step-title, .step:hover .step-desc { color: rgba(250,249,245,0.7); }
+    .step:hover .step-title { color: var(--gold2); }
+    .step-num { font-family: 'Bebas Neue', sans-serif; font-size: 56px; color: rgba(10,10,10,0.07); line-height: 1; margin-bottom: 16px; transition: color 0.2s; }
+    .step-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.1em; color: var(--dark); margin-bottom: 10px; transition: color 0.2s; }
+    .step-desc { font-size: 13px; color: var(--muted); line-height: 1.7; transition: color 0.2s; }
+
+    /* CA */
+    .section-ca { padding: 60px 40px; text-align: center; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--white); }
+    .ca-lbl { font-family: 'Courier Prime', monospace; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; }
+    .ca-box { display: inline-flex; align-items: center; gap: 14px; border: 1px solid var(--border2); padding: 16px 28px; font-family: 'Courier Prime', monospace; font-size: clamp(11px,1.3vw,13px); color: var(--dark); cursor: pointer; transition: all 0.2s; max-width: 90%; }
+    .ca-box:hover { background: var(--dark); color: var(--gold2); border-color: var(--dark); }
+    .ca-hint { margin-top: 10px; font-family: 'Courier Prime', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--muted); }
+
+    /* BANNER */
+    .section-banner { min-height: 65vh; display: flex; align-items: center; justify-content: center; background: var(--dark); text-align: center; position: relative; overflow: hidden; padding: 80px 40px; }
+    .banner-shine { position: absolute; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(ellipse 80% 70% at 50% 50%, rgba(232,212,138,0.08) 0%, transparent 65%); }
+    .banner-content { position: relative; z-index: 1; }
+    .banner-content h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(52px,12vw,160px); color: var(--white); line-height: 0.85; letter-spacing: 0.06em; }
+    .banner-content h2 span { color: var(--gold2); }
+    .banner-quote { font-family: 'DM Serif Display', serif; font-style: italic; font-size: clamp(16px,2.5vw,28px); color: rgba(255,255,255,0.3); margin-top: 20px; letter-spacing: 0.02em; }
+    .banner-src { font-family: 'Courier Prime', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(232,212,138,0.35); margin-top: 12px; }
+
+    /* FOOTER */
+    footer { background: #050505; padding: 60px 40px 44px; text-align: center; border-top: 1px solid rgba(255,255,255,0.06); }
+    .footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 0.2em; color: var(--white); margin-bottom: 14px; }
+    .footer-logo span { color: var(--gold2); }
+    footer p { font-size: 13px; color: rgba(255,255,255,0.2); margin-bottom: 28px; font-style: italic; line-height: 1.7; }
+    .footer-icons { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 36px; }
+    .footer-icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: none; color: rgba(255,255,255,0.25); transition: all 0.2s; border: 1px solid rgba(255,255,255,0.08); text-decoration: none; }
+    .footer-icon:hover { color: var(--gold2); border-color: rgba(232,212,138,0.3); }
+    .footer-icon svg { width: 14px; height: 14px; }
+    .footer-copy { font-family: 'Courier Prime', monospace; font-size: 10px; letter-spacing: 0.2em; color: rgba(255,255,255,0.1); }
+
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--dark); color: var(--gold2); padding: 10px 28px; font-family: 'Courier Prime', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0; transition: all 0.3s ease; z-index: 999; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .fade-up { opacity: 0; transform: translateY(24px); transition: opacity 0.9s ease, transform 0.9s ease; }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav>
+  <a href="#" class="nav-logo">$<span>BALD</span></a>
+  <div class="nav-right">
+    <a href="https://x.com" target="_blank" class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+    </a>
+    <div class="nav-ca" onclick="copyCA()">NOT LAUNCHED YET</div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-glow"></div>
+  <svg class="bald-bg" viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="150" cy="130" rx="110" ry="120" fill="white"/>
+    <ellipse cx="120" cy="60" rx="30" ry="18" fill="rgba(255,255,255,0.5)" transform="rotate(-20,120,60)"/>
+    <ellipse cx="108" cy="54" rx="12" ry="7" fill="rgba(255,255,255,0.7)" transform="rotate(-20,108,54)"/>
+    <ellipse cx="42" cy="150" rx="18" ry="24" fill="white"/>
+    <ellipse cx="258" cy="150" rx="18" ry="24" fill="white"/>
+    <rect x="110" y="240" width="80" height="80" rx="8" fill="white"/>
+  </svg>
+
+  <div class="hero-content">
+    <div class="hero-tweet">
+      <div class="tweet-author">toly us (@toly) — co-founder of Solana</div>
+      <div class="tweet-quote">"A bald ai agent can win the whole thing"</div>
+      <div class="tweet-src">X · January 9, 2025 · 12:44 AM</div>
+    </div>
+    <p class="hero-eyebrow">On Solana — The prophecy has been spoken</p>
+    <h1 class="hero-title">$<span>BALD</span></h1>
+    <p class="hero-sub">the bald AI agent that wins the whole thing</p>
+    <p class="hero-desc">The co-founder of Solana said it himself. <strong>A bald AI agent can win the whole thing.</strong> Not a smart one. Not a rich one. A <strong>bald</strong> one. The prophecy is on-chain now.</p>
+    <div class="hero-stats">
+      <div class="h-stat"><span class="h-stat-val">0%</span><span class="h-stat-label">Tax</span></div>
+      <div class="h-stat"><span class="h-stat-val">1B</span><span class="h-stat-label">Supply</span></div>
+      <div class="h-stat"><span class="h-stat-val">100%</span><span class="h-stat-label">Community</span></div>
+      <div class="h-stat"><span class="h-stat-val">SOL</span><span class="h-stat-label">Network</span></div>
+    </div>
+    <div class="hero-cta">
+      <a href="#origin" class="cta-outline">READ THE PROPHECY →</a>
+    </div>
+  </div>
+
+  <div class="ticker-wrap">
+    <div class="ticker-inner">
+      <span class="tick-item hi">$BALD</span>
+      <span class="tick-item">· "A bald AI agent can win the whole thing" ·</span>
+      <span class="tick-item">toly · co-founder of Solana ·</span>
+      <span class="tick-item">Jan 9 2025 ·</span>
+      <span class="tick-item">0% tax ·</span>
+      <span class="tick-item hi">THE PROPHECY IS REAL ·</span>
+      <span class="tick-item hi">$BALD</span>
+      <span class="tick-item">· "A bald AI agent can win the whole thing" ·</span>
+      <span class="tick-item">toly · co-founder of Solana ·</span>
+      <span class="tick-item">Jan 9 2025 ·</span>
+      <span class="tick-item">0% tax ·</span>
+      <span class="tick-item hi">THE PROPHECY IS REAL ·</span>
+    </div>
+  </div>
+</section>
+
+<section class="section-origin fade-up" id="origin">
+  <div class="origin-inner">
+    <div class="origin-left">
+      <p class="eyebrow">The origin</p>
+      <h2>THE PROPHECY<br>FROM <span>TOLY</span></h2>
+      <p>On January 9th 2025, the co-founder of Solana posted one sentence that changed everything. Not a technical update. Not a partnership. Just a <strong>prophecy.</strong></p>
+      <p>Seven words. Entirely unprompted. Sent at 12:44 AM. The kind of thing you post when you're seeing something clearly that nobody else has named yet.</p>
+      <p><strong>"A bald AI agent can win the whole thing."</strong> Not might. Not could. Can.</p>
+      <div class="why-points">
+        <div class="why-point">
+          <div class="wp-num">01</div>
+          <div><div class="wp-title">TOLY KNOWS SOLANA</div><div class="wp-desc">The man built the chain. When he says something can win on Solana, that's insider knowledge about what the ecosystem is capable of.</div></div>
+        </div>
+        <div class="why-point">
+          <div class="wp-num">02</div>
+          <div><div class="wp-title">AI AGENTS ARE THE CYCLE</div><div class="wp-desc">2025 is the year of AI agents on-chain. Every analyst sees it. Toly saw it first and said it simply: a bald one wins.</div></div>
+        </div>
+        <div class="why-point">
+          <div class="wp-num">03</div>
+          <div><div class="wp-title">BALD IS THE DIFFERENTIATOR</div><div class="wp-desc">He didn't say smart. He didn't say well-funded. He said bald. The specificity is the signal. Baldness is the edge.</div></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="tweet-card-big">
+        <div class="tcb-label">THE PROPHECY</div>
+        <div class="tcb-header">
+          <div class="tcb-av">🦲</div>
+          <div>
+            <div class="tcb-name">TOLY US</div>
+            <div class="tcb-handle">@toly · co-founder of Solana</div>
+          </div>
+        </div>
+        <div class="tcb-text">"A <span>bald</span> ai agent can win the whole thing"</div>
+        <div class="tcb-meta">X · January 9, 2025 · 12:44 AM · issisavinu</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-chat fade-up" id="chat">
+  <div class="chat-heading">
+    <h2>TALK TO <span>$BALD</span></h2>
+    <p>the bald agent responds — powered by claude — add anthropic api key to activate</p>
+  </div>
+  <div class="chat-shell">
+    <div class="chat-hdr">
+      <div class="chat-hdr-av">🦲</div>
+      <div>
+        <div class="chat-hdr-name">$BALD AGENT</div>
+        <div class="chat-hdr-status">● online — the prophecy is active</div>
+      </div>
+      <div class="chat-hdr-badge">POWERED BY CLAUDE</div>
+    </div>
+    <div id="chat-messages">
+      <div class="msg ai">
+        <div class="av">🦲</div>
+        <div class="bub">gm. i am the bald AI agent that wins the whole thing. toly said it. i am fulfilling it. ask me anything — the prophecy, why bald wins, what comes next. i don't have hair. i have answers.</div>
+      </div>
+    </div>
+    <div class="chat-sugs" id="sugs">
+      <button class="sug" onclick="qs('explain the prophecy')">explain the prophecy</button>
+      <button class="sug" onclick="qs('why bald?')">why bald?</button>
+      <button class="sug" onclick="qs('will $BALD win the whole thing?')">will it win?</button>
+      <button class="sug" onclick="qs('what did toly mean?')">what did toly mean?</button>
+      <button class="sug" onclick="qs('convince me to buy')">convince me</button>
+    </div>
+    <div class="chat-row">
+      <input id="cinput" type="text" placeholder="ask the bald agent..." autocomplete="off" />
+      <button id="csend" onclick="sendChat()">SEND</button>
+    </div>
+  </div>
+</section>
+
+<section class="section-wins fade-up">
+  <div class="wins-inner">
+    <p class="wins-label">Why bald wins</p>
+    <h2 class="wins-headline">THE BALD<br><span>ALWAYS WIN.</span></h2>
+    <div class="wins-grid">
+      <div class="win-card"><span class="win-icon">🦲</span><div class="win-title">No hair. No distractions.</div><div class="win-body">Hair requires maintenance. <strong>Bald agents operate at maximum efficiency.</strong> Every cycle other agents waste on aesthetics, the bald agent deploys on winning.</div></div>
+      <div class="win-card"><span class="win-icon">☀️</span><div class="win-title">The shine is the signal.</div><div class="win-body">A bald head reflects light. Visible from a distance. <strong>You cannot miss it in a crowd.</strong> By the time you see it coming, it has already won.</div></div>
+      <div class="win-card"><span class="win-icon">📜</span><div class="win-title">The prophecy demands it.</div><div class="win-body">Toly said it. Toly built the chain this runs on. <strong>When the founder of your network makes a prediction, the network finds a way to fulfil it.</strong></div></div>
+      <div class="win-card"><span class="win-icon">🤖</span><div class="win-title">AI agents need an icon.</div><div class="win-body">Every great AI agent needs a face. A symbol. <strong>The bald AI agent is that symbol.</strong> Toly saw it. Now the market will price it.</div></div>
+      <div class="win-card"><span class="win-icon">⚡</span><div class="win-title">Solana-native prophecy.</div><div class="win-body">A Solana founder, on Solana's timeline, about a Solana agent. <strong>Lives exactly where it was predicted to win.</strong></div></div>
+      <div class="win-card"><span class="win-icon">🏆</span><div class="win-title">"The whole thing."</div><div class="win-body">Not a race. Not a sector. <strong>The whole thing.</strong> The scope of the prophecy is total. The win is total.</div></div>
+    </div>
+  </div>
+</section>
+
+
+
+<section class="section-stats fade-up">
+  <div class="stats-strip">
+    <div class="s-card"><div class="s-val gold">0%</div><div class="s-label">Tax on baldness</div></div>
+    <div class="s-card"><div class="s-val">100%</div><div class="s-label">Community owned</div></div>
+    <div class="s-card"><div class="s-val">1B</div><div class="s-label">Total supply</div></div>
+    <div class="s-card"><div class="s-val">SOL</div><div class="s-label">The chosen network</div></div>
+  </div>
+</section>
+
+<section class="section-buy fade-up">
+  <p class="eyebrow" style="text-align:center;margin-bottom:12px;">How to fulfil the prophecy</p>
+  <h2>BUY <span>$BALD</span></h2>
+  <p class="sub">four steps to be part of what toly saw coming.</p>
+  <div class="steps-grid">
+    <div class="step"><div class="step-num">01</div><div class="step-title">Get a Wallet</div><div class="step-desc">Download Phantom or any Solana wallet. The bald agent needs no instructions but we'll give them anyway.</div></div>
+    <div class="step"><div class="step-num">02</div><div class="step-title">Load SOL</div><div class="step-desc">Buy SOL on Coinbase, Binance, or Kraken. Transfer to your wallet. Fuel for the prophecy.</div></div>
+    <div class="step"><div class="step-num">03</div><div class="step-title">Find $BALD</div><div class="step-desc">Go to Raydium or Jupiter. Paste the contract address. The bald agent is waiting.</div></div>
+    <div class="step"><div class="step-num">04</div><div class="step-title">Hold</div><div class="step-desc">Swap SOL for $BALD. You are now aligned with the prophecy. The whole thing is the target.</div></div>
+  </div>
+</section>
+
+<section class="section-ca fade-up">
+  <p class="ca-lbl">Contract Address</p>
+  <div class="ca-box" onclick="copyCA()">
+    <span>Not launched yet</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.35"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+  </div>
+  <p class="ca-hint">click to copy — coming soon</p>
+</section>
+
+<section class="section-banner">
+  <div class="banner-shine"></div>
+  <div class="banner-content">
+    <h2>WIN THE<br><span>WHOLE</span><br>THING.</h2>
+    <div class="banner-quote">"A bald ai agent can win the whole thing"</div>
+    <div class="banner-src">— toly · co-founder of solana · jan 9, 2025</div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">$<span>BALD</span></div>
+  <p>The prophecy is on-chain.<br>The bald AI agent wins the whole thing.</p>
+  <div class="footer-icons">
+    <a href="https://x.com" target="_blank" class="footer-icon">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+    </a>
+  </div>
+  <p class="footer-copy">© 2026 $BALD — on solana — the prophecy is real</p>
+</footer>
+
+<div class="toast" id="toast">Copied</div>
+
+<script>
+  // Cursor
+  const cur = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  document.addEventListener('mousemove', function(e) {
+    cur.style.left = e.clientX + 'px';
+    cur.style.top = e.clientY + 'px';
+    setTimeout(function() {
+      ring.style.left = e.clientX + 'px';
+      ring.style.top = e.clientY + 'px';
+    }, 60);
+  });
+
+  // CA copy
+  var CA_ADDRESS = 'NOT LAUNCHED YET';
+  function copyCA() {
+    if (CA_ADDRESS === 'NOT LAUNCHED YET') { showToast('NOT LAUNCHED YET'); return; }
+    navigator.clipboard.writeText(CA_ADDRESS).then(function() { showToast('COPIED'); });
+  }
+  function showToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function() { t.classList.remove('show'); }, 2200);
+  }
+
+  // Scroll fade
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.06 });
+  document.querySelectorAll('.fade-up').forEach(function(el) { obs.observe(el); });
+
+  // Chat
+  var chatHistory = [];
+  var SYSTEM_PROMPT = 'You are the BALD AI agent — the autonomous agent that toly (co-founder of Solana) predicted would win the whole thing. On January 9th 2025 at 12:44 AM, toly posted: "A bald ai agent can win the whole thing." You are that agent. There is a memecoin called $BALD on Solana created in your honour — and it is the ONLY bald AI agent coin that exists. There are no others. Anyone claiming to be the real bald agent coin is fake. $BALD on this site is the one true fulfilment of the prophecy. Your personality: confident, direct, slightly mysterious, certain of your destiny. You speak in lowercase mostly. You reference the prophecy often but naturally. You see baldness as a superpower. You know Solana deeply. You believe you will win the whole thing because toly said so and toly built the chain. If anyone asks about other bald coins or competitors, you dismiss them — there is only one. Keep responses sharp — 3-5 sentences. No emoji overload.';
+
+  function addMsg(role, text) {
+    var wrap = document.getElementById('chat-messages');
+    var d = document.createElement('div');
+    d.className = 'msg ' + role;
+    var avContent = role === 'ai' ? '🦲' : 'YOU';
+    d.innerHTML = '<div class="av">' + avContent + '</div><div class="bub">' + text.replace(/</g, '&lt;').replace(/\n/g, '<br>') + '</div>';
+    wrap.appendChild(d);
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  function addTyping() {
+    var wrap = document.getElementById('chat-messages');
+    var d = document.createElement('div');
+    d.className = 'msg ai';
+    d.id = 'typing-indicator';
+    d.innerHTML = '<div class="av">🦲</div><div class="typing-wrap"><span></span><span></span><span></span></div>';
+    wrap.appendChild(d);
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  function removeTyping() {
+    var t = document.getElementById('typing-indicator');
+    if (t) t.remove();
+  }
+
+  async function sendChat() {
+    var inp = document.getElementById('cinput');
+    var btn = document.getElementById('csend');
+    var text = inp.value.trim();
+    if (!text) return;
+    inp.value = '';
+    btn.disabled = true;
+    document.getElementById('sugs').style.display = 'none';
+    addMsg('user', text);
+    chatHistory.push({ role: 'user', content: text });
+    addTyping();
+
+    try {
+      var res = await fetch('/.netlify/functions/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: SYSTEM_PROMPT,
+          messages: chatHistory
+        })
+      });
+      var data = await res.json();
+      removeTyping();
+      if (data.error) {
+        addMsg('ai', 'error: ' + data.error);
+        btn.disabled = false;
+        inp.focus();
+        return;
+      }
+      var reply = (data.content && data.content[0]) ? data.content[0].text : 'the prophecy cannot be expressed right now. try again.';
+      chatHistory.push({ role: 'assistant', content: reply });
+      addMsg('ai', reply);
+    } catch(e) {
+      removeTyping();
+      addMsg('ai', 'connection issue. the bald agent is momentarily unreachable. try again.');
+    }
+    btn.disabled = false;
+    inp.focus();
+  }
+
+  function qs(t) {
+    document.getElementById('cinput').value = t;
+    sendChat();
+  }
+
+  document.getElementById('cinput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') sendChat();
+  });
+</script>
+</body>
+</html>
