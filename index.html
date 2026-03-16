@@ -1302,7 +1302,7 @@
       var data = await res.json();
       removeTyping();
       if (data.error) {
-        addMsg('ai', 'error: ' + data.error);
+        addMsg('ai', 'error: ' + (typeof data.error === 'object' ? JSON.stringify(data.error) : data.error));
         btn.disabled = false;
         inp.focus();
         return;
